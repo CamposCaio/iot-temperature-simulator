@@ -1,0 +1,58 @@
+version: "3.1"
+
+services:
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: 123
+
+  iot-gateway:
+    build:
+      context: ./iot-gateway
+      dockerfile: Dockerfile
+    container_name: iot-gateway
+    environment:
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    volumes:
+      - .iot-gateway/src:/app/src
+
+  temperature-monitor:
+    build:
+      context: ./temperature-monitor
+      dockerfile: Dockerfile
+    container_name: temperature-monitor
+    environment:
+      - PORT=3002
+    ports:
+      - "3002:3002"
+    depends_on:
+      - iot-gateway
+    volumes:
+      - .temperature-monitor/src:/app/src
+
+  database-writer:
+    build:
+      context: ./database-writer
+      dockerfile: Dockerfile
+    container_name: database-writer
+    environment:
+      - PORT=3003
+    ports:
+      - "3003:3003"
+    depends_on:
+      - iot-gateway
+    volumes:
+      - .database-writer/src:/app/src
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
