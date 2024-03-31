@@ -6,9 +6,15 @@ import { MessageEntity } from './message.entity';
 export class MessageService {
   constructor(private readonly repository: MessageRepository) {}
 
-  create(message: unknown) {
+  async create(message: unknown) {
     const createEntity = new MessageEntity();
     createEntity.message = message;
-    return this.repository.save(createEntity);
+    await this.repository.save(createEntity);
+
+    await new Promise<void>((resolve) =>
+      setTimeout(() => {
+        resolve();
+      }, 100),
+    );
   }
 }
